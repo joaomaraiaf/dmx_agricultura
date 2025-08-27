@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useApi } from "@/hooks/useApi";
-import { useAuth } from "@/hooks/useAuth";
+import { useApi } from "@/_hooks/useApi";
+import { useAuth } from "@/_hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { notify } from "@/utils/notifications";
+import { notify } from "@/_utils/notifications";
 
 export default function Login() {
   const { request, loading, error } = useApi();
@@ -22,7 +22,7 @@ export default function Login() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/plots");
+      router.push("/dashboard");
     }
   }, [isAuthenticated, router]);
 
@@ -52,7 +52,7 @@ export default function Login() {
         notify.success("Login realizado com sucesso!");
 
         setTimeout(() => {
-          router.push("/plots");
+          router.push("/dashboard");
         }, 1500);
       }
     } catch (err) {
@@ -152,12 +152,6 @@ export default function Login() {
               <label htmlFor="password" className="block text-sm/6 font-medium text-gray-100">
                 Senha
               </label>
-              {/* Implementação Posterior */}
-              {/* <div className="text-sm">
-                <a href="#" className="font-semibold text-indigo-400 hover:text-indigo-300">
-                  Forgot password?
-                </a>
-              </div> */}
             </div>
             <div className="mt-2">
               <input

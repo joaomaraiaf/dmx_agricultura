@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: dmx-database
+    environment:
+      POSTGRES_DB: dmx_db
+      POSTGRES_USER: dmx_user
+      POSTGRES_PASSWORD: dmx_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dmx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dmx_user -d dmx_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dmx-backend
+    environment:
+      NODE_ENV: development
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: dmx_db
+      DB_USER: dmx_user
+      DB_PASS: dmx_password
+      JWT_SECRET: supersecret-dev-key
+      JWT_EXPIRES: 24h
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - dmx-network
+    depends_on:
+      database:
+        condition: service_healthy
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dmx-frontend
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - dmx-network
+    depends_on:
+      - backend
+    command: npm run dev
+
+  tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dmx-tests
+    environment:
+      NODE_ENV: test
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: dmx_db
+      DB_USER: dmx_user
+      DB_PASS: dmx_password
+      JWT_SECRET: supersecret-dev-key
+      JWT_EXPIRES: 24h
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - dmx-network
+    depends_on:
+      backend:
+        condition: service_started
+    command: >
+       sh -c "echo '🧪 Aguardando backend estar pronto...' &&
+              sleep 15 &&
+              echo '🚀 Executando testes de integração DMX...' &&
+              npx jest integration.test.js --verbose &&
+              echo '\n🎉 SISTEMA DMX INICIALIZADO COM SUCESSO!' &&
+              echo '📊 Relatório: Banco PostgreSQL ✅ | Tabelas ✅ | APIs ✅ | Seed ✅'"
+    restart: "no"
+
+volumes:
+  postgres_data:
+
+networks:
+  dmx-network:
+    driver: bridge

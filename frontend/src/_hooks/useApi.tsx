@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import api from "@/lib/api";
+import { useState, useCallback } from "react";
+import api from "@/_lib/api";
 
 export function useApi() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    async function request<T = any>(
+    const request = useCallback(async function<T = any>(
         method: "get" | "post" | "put" | "delete",
         url: string,
         data?: any
@@ -29,7 +29,7 @@ export function useApi() {
         } finally {
             setLoading(false);
         }
-    }
+    }, []);
 
     return { request, loading, error };
 }

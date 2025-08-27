@@ -8,13 +8,13 @@ import "leaflet-draw/dist/leaflet.draw.css";
 
 declare module "leaflet" {
   namespace Draw {
-    const Event: {
+    interface Event {
       CREATED: string;
       DELETED: string;
-    };
+    }
   }
   namespace Control {
-    class Draw extends L.Control {
+    class DrawControl extends L.Control {
       constructor(options?: any);
     }
   }
