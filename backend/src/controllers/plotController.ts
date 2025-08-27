@@ -34,17 +34,8 @@ export const createPlotController = async (req: Request, res: Response) => {
         const userId = (req as any).user.id;
         const { name, culture, coordinates, area, point_count } = req.body;
 
-        console.log('Received data:', { name, culture, coordinates, area, point_count, userId });
-
-        // Validate required fields
+        
         if (!name || !culture || !coordinates || area === undefined || area === null || point_count === undefined || point_count === null) {
-            console.log('Validation failed - missing fields:', {
-                name: !!name,
-                culture: !!culture,
-                coordinates: !!coordinates,
-                area,
-                point_count
-            });
             return res.status(400).json({
                 error: 'Missing required fields: name, culture, coordinates, area, point_count',
                 received: { name, culture, coordinates, area, point_count }
